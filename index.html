@@ -8,114 +8,178 @@
   <style>
     body {
       font-family: 'Bubblegum Sans', cursive;
-      text-align: center;
       background-size: 100%, 100%;
       background-repeat: no-repeat;
-
+      
       /* background-position: center; */
       color: white;
       text-shadow: 3px 3px 10px rgba(0, 0, 0, 1);
     }
-
-    #datetime {
-      font-size: 3.5em;
-      margin-top: 50px;
-    }
-
-    #time-description {
-      font-size: 4em;
-      margin-top: 10px;
-    }
-
+    
     #activity {
-      font-size: 4em;
+      font-size: 5em;
       font-weight: bold;
       margin-top: 200px;
     }
-
+    #activity, #next-activity, #activity-time-info {
+      margin-right: 20px;
+    }
     #next-activity {
       font-size: 3em;
       margin-top: 20px;
     }
+    
+    #date, #time {
+      font-size: 3em;
+    }
+    #date {
+      margin-top: 20px;
+      margin-left: 20px;
+      font-size: 2em;
+      text-align: left;
+    }
+
+    #time {
+      font-size: 3.5em;
+      margin-top: 20px;
+      margin-left: 20px;
+      display: inline;
+      text-align: left;
+    }
+
+    #time-description {
+      font-size: 3em;
+      display: inline;
+      margin-left: 11px;
+    }
+    
+    #activities {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: right;
+    }
+    
+    #activity-time-info {
+      font-size: 2.5em;
+      margin-top: 0px;
+    }
   </style>
 </head>
 <body>
-  <div id="datetime"></div>
+  <div id="date"></div>
+  <div id="time"></div>
   <div id="time-description"></div>
-  <div id="activity"></div>
-  <div id="next-activity"></div>
-
+  <div id="activities">
+    <div id="activity"></div>
+    <div id="activity-time-info"></div>
+    <div id="next-activity"></div>
+  </div>
   <script>
     function updateDateTime() {
       const now = new Date();
-      const options = {
+      const dateOptions = {
         weekday: "long",
         year: "numeric",
         month: "long",
         day: "numeric",
       };
-      document.getElementById("datetime").textContent = now.toLocaleString("en-US", options);
-      document.getElementById("datetime").textContent += "\n" + now.toLocaleTimeString("en-US", { hour: 'numeric', minute: 'numeric', hour12: true });
-
+      const timeOptions = { hour: 'numeric', minute: 'numeric', hour12: true };
+      
+      document.getElementById("date").textContent = now.toLocaleDateString("en-US", dateOptions);
+      document.getElementById("time").textContent = now.toLocaleTimeString("en-US", timeOptions);
+      
       const hour = now.getHours();
       let activity = "";
       let nextActivity = "";
       let backgroundImage = "";
       let timeDescription = "";
-
+      let endTime = new Date(now);
+      
       if (hour >= 23 || hour < 4) {
         activity = "Sleep";
         nextActivity = "Eat Breakfast (8am - 10am)";
         backgroundImage = "sleep.jpg";
-        timeDescription = "Late at night";
+        timeDescription = "Late at Night";
       } else if (hour >= 4 && hour < 8) {
         activity = "Sleep"; 
         nextActivity = "Eat Breakfast (8am - 10am)";
         backgroundImage = "sleep.jpg";
-        timeDescription = "Early morning";
+        timeDescription = "Early in the Morning";
       } else if (hour >= 8 && hour < 10) {
         activity = "Eat Breakfast";
         nextActivity = "Rest (10am - 12pm)";
         backgroundImage = "eat-breakfast.jpg";
-        timeDescription = "Morning";
+        timeDescription = "in the Morning";
       } else if (hour >= 10 && hour < 12) {
         activity = "Rest";
         nextActivity = "Eat Lunch (12pm - 2pm)";
         backgroundImage = "rest.jpg";
-        timeDescription = "Late morning";
+        timeDescription = "in the Late Morning";
       } else if (hour >= 12 && hour < 14) {
         activity = "Eat Lunch";
         nextActivity = "Move Around (2pm - 8pm)";
         backgroundImage = "eat-lunch.jpg";
-        timeDescription = "Early afternoon";
+        timeDescription = "in the Early Afternoon";
       } else if (hour >= 14 && hour < 18) {
         activity = "Move Around";
         nextActivity = "Eat Dinner (8pm - 10pm)";
         backgroundImage = "move-around.jpg";
-        timeDescription = "Afternoon";
+        timeDescription = "in the Afternoon";
       } else if (hour >= 18 && hour < 20) {
         activity = "Move Around";
         nextActivity = "Eat Dinner (8pm - 10pm)";
         backgroundImage = "move-around.jpg";
-        timeDescription = "Evening";  
+        timeDescription = "in the Evening";  
       } else if (hour >= 20 && hour < 22) {
         activity = "Eat Dinner";
         nextActivity = "Get Ready for Bed (10pm - 11pm)";
         backgroundImage = "eat-dinner.jpg";
-        timeDescription = "Night";
+        timeDescription = "at Night";
       } else {
         activity = "Get Ready for Bed";
         nextActivity = "Sleep (11pm - 8am)";
         backgroundImage = "get-ready-for-bed.jpg";
-        timeDescription = "Late evening";
+        timeDescription = "in the Late Evening";
+      }
+      
+      // Add end time calculation
+      if (hour >= 23 || hour < 8) {
+        endTime.setHours(8, 0, 0, 0);
+        if (hour >= 23) endTime.setDate(endTime.getDate() + 1);
+      } else if (hour >= 8 && hour < 10) {
+        endTime.setHours(10, 0, 0, 0);
+      } else if (hour >= 10 && hour < 12) {
+        endTime.setHours(12, 0, 0, 0);
+      } else if (hour >= 12 && hour < 14) {
+        endTime.setHours(14, 0, 0, 0);
+      } else if (hour >= 14 && hour < 20) {
+        endTime.setHours(20, 0, 0, 0);
+      } else if (hour >= 20 && hour < 22) {
+        endTime.setHours(22, 0, 0, 0);
+      } else {
+        endTime.setHours(23, 0, 0, 0);
       }
 
+      // Calculate remaining time
+      const remainingMinutes = Math.round((endTime - now) / 60000);
+      let remainingTimeText;
+      if (remainingMinutes >= 60) {
+        const remainingHours = Math.round(remainingMinutes / 60);
+        remainingTimeText = `in ${remainingHours} hours`;
+      } else {
+        remainingTimeText = `${remainingMinutes}min remaining`;
+      }
+
+      // Update the DOM
       document.getElementById("time-description").textContent = timeDescription;
       document.getElementById("activity").textContent = activity;
-      document.getElementById("next-activity").textContent = "Afterward: " + nextActivity;
+      document.getElementById("activity-time-info").textContent = `until ${endTime.toLocaleTimeString("en-US", timeOptions)} ${remainingTimeText}`;
+      document.getElementById("next-activity").textContent = "Next: " + nextActivity;
       document.body.style.backgroundImage = `url('${backgroundImage}')`;
     }
-
+    
     updateDateTime();
     setInterval(updateDateTime, 60000);
   </script>
